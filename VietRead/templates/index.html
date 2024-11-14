@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VietRead</title>
+    <style>
+        body {
+            width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            height: 200px;
+        }
+
+        label {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            font-size: 16px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            resize: none;
+            /* Ngăn chặn thay đổi kích thước textarea */
+        }
+
+        button {
+            font-size: 16px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+            /* Hiệu ứng hover cho nút */
+        }
+
+        p {
+            text-align: center;
+            font-size: 16px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        img {
+            display: block;
+            margin: 0 auto 20px;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        select {
+            font-size: 16px;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>VietRead</h1>
+    <!-- Uncomment the line below to show the logo -->
+    <!-- <img src="img/image2.png" alt="Logo"> -->
+
+    <form id="ttsForm">
+        <label for="voice-select">Chọn giọng:</label>
+        <select id="voice-select">
+            <option value="male">Giọng nam</option>
+            <option value="female">Giọng nữ</option>
+        </select>
+
+        <label for="text">Nhập văn bản:</label>
+        <textarea name="text" id="text" cols="30" rows="5" placeholder="Nhập văn bản ở đây..."></textarea>
+
+        <button type="submit">Tạo âm thanh</button>
+    </form>
+
+    <p>Output: <span id="output"></span></p>
+
+    <audio id="audioPlayer" controls style="display:none;"></audio> <!-- Player audio, hidden -->
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $('#ttsForm').on('submit', function (event) {
+            event.preventDefault();
+
+            var text = $('#text').val();
+            const voice = document.getElementById('voice-select').value;
+
+            if (!text) {
+                alert("Vui lòng nhập văn bản.");
+                return;
+            }
+
+            $.ajax({
+               type: 'POST',
+                url: '/predict',
+                contentType: 'application/json', // Thiết lập định dạng nội dung
+                data: JSON.stringify({ text: text, voice: voice }), // Chuyển đổi dữ liệu thành JSON
+                success: function (data) {
+                    if (data.output_audio) {
+                        $('#output').html(`Âm thanh đã được tạo thành công!`);
+                        // Cập nhật đường dẫn cho audio player
+                        $('#audioPlayer').attr('src', data.output_audio); // Đảm bảo đây là đường dẫn đúng
+                        $('#audioPlayer')[0].play(); // Tự động phát audio
+                    } else {
+                        $('#output').text("Có lỗi xảy ra khi tạo âm thanh.");
+                    }
+                },
+                error: function () {
+                    $('#output').text("Đã xảy ra lỗi trong quá trình xử lý.");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
